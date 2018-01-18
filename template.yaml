@@ -1,0 +1,17 @@
+Transform: AWS::Serverless-2016-10-31
+Resources:
+  etherdome:
+    Type: 'AWS::Serverless::Function'
+    Properties:
+      Runtime: nodejs6.10
+      Handler: index.handler
+      Timeout: 10
+      # Typical run: 584 MB of memory
+      MemorySize: 1024
+      CodeUri: .
+      Events:
+        Api:
+          Type: Api
+          Properties:
+            Path: /
+            Method: post
