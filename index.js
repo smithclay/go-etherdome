@@ -3,8 +3,13 @@ const http = require('http');
 const { spawn } = require('child_process');
 
 const GETH_BINARY_NAME = 'geth-linux-amd64-1.7.3-4bb3c89d';
+const GETH_RPC_HOST = 'localhost';
+const GETH_RPC_PORT = 8545;
+const RETRY_TIMEOUT_MS = 400;
 
-const geth = spawn(path.join(process.env.LAMBDA_TASK_ROOT, 'bin', GETH_BINARY_NAME), ['--dev', '--dev.period', '4', '--rpc', '  --ipcdisable']);
+const geth = spawn(path.join(process.env.LAMBDA_TASK_ROOT, 'bin', GETH_BINARY_NAME),
+    ['--dev', '--dev.period', '4', '--rpc', '  --ipcdisable']
+);
 
 geth.stdout.on('data', (data) => {
     console.log(`geth > stdout: ${data}`);
@@ -18,39 +23,62 @@ geth.on('close', (code) => {
     console.log(`geth > child process exited with code ${code}`);
 });
 
-exports.handler = (event, context, callback) => {
-    // Need to wait until geth is started
-    setTimeout(function() {
-        // Proxy JSON-RPC Request
-        var post_data = event.body;
-        var post_options = {
-            host: 'localhost',
-            port: '8545',
-            path: '/',
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Content-Length': Buffer.byteLength(post_data)
-            }
-        };
-        // Set up the request
-        var post_req = http.request(post_options, function(res) {
-            res.setEncoding('utf8');
-            var data = '';
-            res.on('data', function (chunk) {
-                data += chunk;
-            });
-            res.on('end', function() {
-                var gatewayResponse = {
-                    statusCode: 200,
-                    body: data
-                };
-                console.log('>> data', data)
-                console.log('>> response ', JSON.stringify(gatewayResponse));
-                callback(null, gatewayResponse);
-            });
+// Proxy geth JSON-RPC request from gateway
+var proxyRPCRequest = function(requestBody, cb) {
+    var opts = {
+        host: GETH_RPC_HOST,
+        port: GETH_RPC_PORT,
+        path: '/',
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'Content-Length': Buffer.byteLength(requestBody)
+        }
+    };
+
+    var post = http.request(opts, function(res) {
+        res.setEncoding('utf8');
+        var data = '';
+        res.on('data', function (chunk) {
+            data += chunk;
         });
-        post_req.write(post_data);
-        post_req.end();
-    }, 5000);
+        res.on('end', function() {
+            var gatewayResponse = {
+                statusCode: 200,
+                headers: {
+                    'application/type': 'text/json'
+                },
+                body: data
+            };
+            console.log('>> data', data)
+            console.log('>> response ', JSON.stringify(gatewayResponse));
+            cb(null, gatewayResponse);
+        });
+    });
+    post.on('error', function(e) {
+        if (e.code === 'ECONNREFUSED') {
+            // retry
+            setTimeout(function() {
+                proxyRPCRequest(requestBody, cb);
+            }, RETRY_TIMEOUT_MS);
+        } else {
+            cb(null, {
+                statusCode: 500,
+                body: e.toString()
+            });
+        }
+    });
+    post.write(requestBody);
+    post.end();
+}
+
+exports.handler = (event, context, callback) => {
+    context.callbackWaitsForEmptyEventLoop = false;
+
+    proxyRPCRequest(event.body, function(err, gatewayResponse) {
+        if (err) {
+            return callback(null, { statusCode: 500, body: err.toString() });
+        }
+        callback(null, gatewayResponse);
+    });
 }
