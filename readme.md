@@ -10,3 +10,7 @@
     $ sam package --template-file template.yaml --s3-bucket etherdome --output-template-file packaged.yaml
     $ sam deploy --template-file ./packaged.yaml --stack-name etherdome-stack --capabilities CAPABILITY_IAM
 ```
+
+### environment variables
+
+    * `LOG_DEBUG`: include debug output in logs

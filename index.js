@@ -1,5 +1,6 @@
 const path = require('path');
 const http = require('http');
+const log = require('lambda-log');
 const { spawn } = require('child_process');
 
 const GETH_BINARY_NAME = 'geth-linux-amd64-1.7.3-4bb3c89d';
@@ -12,15 +13,15 @@ const geth = spawn(path.join(process.env.LAMBDA_TASK_ROOT, 'bin', GETH_BINARY_NA
 );
 
 geth.stdout.on('data', (data) => {
-    console.log(`geth > stdout: ${data}`);
+    log.debug(`geth stdout: ${data}`);
 });
 
 geth.stderr.on('data', (data) => {
-    console.log(`geth > stderr: ${data}`);
+    log.debug(`geth stderr: ${data}`);
 });
 
 geth.on('close', (code) => {
-    console.log(`geth > child process exited with code ${code}`);
+    log.error(`geth child process exited with code ${code}`);
 });
 
 // Proxy geth JSON-RPC request from gateway
@@ -50,8 +51,7 @@ var proxyRPCRequest = function(requestBody, cb) {
                 },
                 body: data
             };
-            console.log('>> data', data)
-            console.log('>> response ', JSON.stringify(gatewayResponse));
+            log.info(`json-rpc response ${JSON.stringify(gatewayResponse)}`);
             cb(null, gatewayResponse);
         });
     });
@@ -62,6 +62,7 @@ var proxyRPCRequest = function(requestBody, cb) {
                 proxyRPCRequest(requestBody, cb);
             }, RETRY_TIMEOUT_MS);
         } else {
+            log.error(e);
             cb(null, {
                 statusCode: 500,
                 body: e.toString()
@@ -74,6 +75,11 @@ var proxyRPCRequest = function(requestBody, cb) {
 
 exports.handler = (event, context, callback) => {
     context.callbackWaitsForEmptyEventLoop = false;
+
+    log.config.meta.function_version = process.env.AWS_LAMBDA_FUNCTION_VERSION;
+    if (process.env.AWS_SAM_LOCAL || process.env.LOG_DEBUG) {
+        log.config.debug = true;
+    }
 
     proxyRPCRequest(event.body, function(err, gatewayResponse) {
         if (err) {
