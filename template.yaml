@@ -5,13 +5,17 @@ Resources:
     Properties:
       Runtime: nodejs6.10
       Handler: index.handler
-      Timeout: 10
+      Description: "go-ethereum json-rpc lambda"
+      CodeUri: ./etherdome
       # Typical run: 584 MB of memory
       MemorySize: 1024
-      CodeUri: .
-      Events:
-        Api:
-          Type: Api
-          Properties:
-            Path: /
-            Method: post
+      Timeout: 10
+  CustomAuthorizerLambda:
+    Type: 'AWS::Serverless::Function'
+    Properties:
+      Runtime: nodejs6.10
+      Handler: index.handler
+      Description: "Custom authorizer"
+      CodeUri: ./authorizer
+      MemorySize: 512
+      Timeout: 15
