@@ -6,7 +6,7 @@ const { spawn } = require('child_process');
 const GETH_BINARY_NAME = 'geth-linux-amd64-1.7.3-4bb3c89d';
 const GETH_RPC_HOST = 'localhost';
 const GETH_RPC_PORT = 8545;
-const RETRY_TIMEOUT_MS = 400;
+const RETRY_TIMEOUT_MS = 500;
 
 const geth = spawn(path.join(process.env.LAMBDA_TASK_ROOT, 'bin', GETH_BINARY_NAME),
     ['--dev', '--dev.period', '4', '--rpc', '  --ipcdisable']
@@ -25,7 +25,7 @@ geth.on('close', (code) => {
 });
 
 // Proxy geth JSON-RPC request from gateway
-var proxyRPCRequest = function(requestBody, cb) {
+var proxyRPCRequest = function(requestBody, cb, retries=0) {
     var opts = {
         host: GETH_RPC_HOST,
         port: GETH_RPC_PORT,
@@ -59,7 +59,9 @@ var proxyRPCRequest = function(requestBody, cb) {
         if (e.code === 'ECONNREFUSED') {
             // retry
             setTimeout(function() {
-                proxyRPCRequest(requestBody, cb);
+                retries = retries + 1;
+                log.info('json-rpc connection refused', {retry: retries});
+                proxyRPCRequest(requestBody, cb, retries);
             }, RETRY_TIMEOUT_MS);
         } else {
             log.error(e);
