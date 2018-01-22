@@ -34,6 +34,8 @@ module.exports.handler = (event, context, cb) => {
         log.config.debug = true;
     }
 
+    log.debug(JSON.stringify(event));
+
     if (event.authorizationToken) {
       // Remove 'bearer ' from token:
       const token = event.authorizationToken.substring(7);
@@ -42,7 +44,7 @@ module.exports.handler = (event, context, cb) => {
         { url: `${iss}.well-known/jwks.json`, json: true },
         (error, response, body) => {
           if (error || response.statusCode !== 200) {
-            log.error(`jwks request error ${iss}: ${error}`);
+            log.error(`jwks request error ${iss}: ${error}`, { responseCode: response.statusCode });
             cb('Unauthorized');
           }
           const keys = body;

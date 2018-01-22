@@ -10,7 +10,7 @@ Resources:
       # Typical run: 584 MB of memory
       MemorySize: 1024
       Timeout: 10
-  CustomAuthorizerLambda:
+  api-custom-authorizer:
     Type: 'AWS::Serverless::Function'
     Properties:
       Runtime: nodejs6.10
