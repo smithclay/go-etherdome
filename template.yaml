@@ -7,11 +7,19 @@ Resources:
       Handler: index.handler
       Description: "go-ethereum json-rpc lambda"
       CodeUri: ./etherdome
-      # Typical run: 584 MB of memory
+      # Hack to enforce the correct permissions
+      Events:
+        ProxyApiRoot:
+          Type: Api
+          Properties:
+            RestApiId: !Ref api
+            Path: /
+            Method: post
       MemorySize: 1024
       Timeout: 10
-  api-custom-authorizer:
+  apiauthorizer:
     Type: 'AWS::Serverless::Function'
+    FunctionName: apiauthorizer
     Properties:
       Runtime: nodejs6.10
       Handler: index.handler
@@ -19,3 +27,77 @@ Resources:
       CodeUri: ./authorizer
       MemorySize: 512
       Timeout: 15
+  LambdaInvokePolicy:
+    Type: "AWS::IAM::ManagedPolicy"
+    Properties:
+      Description: "Policy for allowing Lambda Invoke"
+      Path: "/"
+      PolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          -
+            Effect: Allow
+            Action:
+            - "lambda:InvokeFunction"
+            Resource: "*"
+  AuthorizerInvokeRole:
+    Type: "AWS::IAM::Role"
+    Properties:
+      Path: "/"
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          -
+            Effect: "Allow"
+            Principal:
+              Service:
+                - "apigateway.amazonaws.com"
+            Action:
+              - "sts:AssumeRole"
+      ManagedPolicyArns:
+        - Ref: LambdaInvokePolicy
+  AmazonAPIGatewayPushToCloudWatchLogs:
+    Type: "AWS::IAM::Role"
+    Properties:
+        ManagedPolicyArns:
+          - "arn:aws:iam::aws:policy/service-role/AmazonAPIGatewayPushToCloudWatchLogs"
+        AssumeRolePolicyDocument:
+          Version: "2012-10-17"
+          Statement:
+            -
+              Sid: ""
+              Effect: "Allow"
+              Action:
+                - "sts:AssumeRole"
+              Principal:
+                Service:
+                  - "apigateway.amazonaws.com"
+  api:
+    Type: AWS::Serverless::Api
+    Properties:
+      StageName: Prod
+      DefinitionBody:
+        swagger: "2.0"
+        info:
+          title: "JSON-RPC API Interface"
+        paths:
+          "/":
+            post:
+              x-amazon-apigateway-integration:
+                httpMethod: POST
+                type: aws_proxy
+                uri: !Sub arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${etherdome.Arn}/invocations
+                responses: {}
+              security:
+                - authorizer: []
+        securityDefinitions:
+          authorizer:
+            type: apiKey
+            name: Authorization
+            in: header
+            x-amazon-apigateway-authtype: custom
+            x-amazon-apigateway-authorizer:
+              authorizerUri: !Sub arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${apiauthorizer.Arn}/invocations
+              authorizerResultTtlInSeconds: 300
+              authorizerCredentials: !Sub ${AuthorizerInvokeRole.Arn}
+              type: token
