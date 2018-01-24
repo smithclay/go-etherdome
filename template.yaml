@@ -1,7 +1,11 @@
 Transform: AWS::Serverless-2016-10-31
+
+# TODO: Add tags
+# -- tier, type, author, app
+
 Resources:
   etherdome:
-    Type: 'AWS::Serverless::Function'
+    Type: AWS::Serverless::Function
     Properties:
       Runtime: nodejs6.10
       Handler: index.handler
@@ -17,8 +21,10 @@ Resources:
             Method: post
       MemorySize: 1024
       Timeout: 10
+      Tags:
+        AppName: ThumbnailApp
   apiauthorizer:
-    Type: 'AWS::Serverless::Function'
+    Type: AWS::Serverless::Function
     FunctionName: apiauthorizer
     Properties:
       Runtime: nodejs6.10
@@ -28,7 +34,7 @@ Resources:
       MemorySize: 512
       Timeout: 15
   LambdaInvokePolicy:
-    Type: "AWS::IAM::ManagedPolicy"
+    Type: AWS::IAM::ManagedPolicy
     Properties:
       Description: "Policy for allowing Lambda Invoke"
       Path: "/"
@@ -41,7 +47,7 @@ Resources:
             - "lambda:InvokeFunction"
             Resource: "*"
   AuthorizerInvokeRole:
-    Type: "AWS::IAM::Role"
+    Type: AWS::IAM::Role
     Properties:
       Path: "/"
       AssumeRolePolicyDocument:
@@ -57,7 +63,7 @@ Resources:
       ManagedPolicyArns:
         - Ref: LambdaInvokePolicy
   AmazonAPIGatewayPushToCloudWatchLogs:
-    Type: "AWS::IAM::Role"
+    Type: AWS::IAM::Role
     Properties:
         ManagedPolicyArns:
           - "arn:aws:iam::aws:policy/service-role/AmazonAPIGatewayPushToCloudWatchLogs"
@@ -98,6 +104,17 @@ Resources:
             x-amazon-apigateway-authtype: custom
             x-amazon-apigateway-authorizer:
               authorizerUri: !Sub arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${apiauthorizer.Arn}/invocations
+              identitySource: method.request.querystring.auth
               authorizerResultTtlInSeconds: 300
               authorizerCredentials: !Sub ${AuthorizerInvokeRole.Arn}
-              type: token
+              type: request
+Outputs:
+  ApiUrl:
+    Description: URL of your API endpoint
+    Value: !Join
+      - ''
+      - - https://
+        - !Ref api
+        - '.execute-api.'
+        - !Ref 'AWS::Region'
+        - '.amazonaws.com/Prod'

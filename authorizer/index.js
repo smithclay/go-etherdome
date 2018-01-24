@@ -30,45 +30,51 @@ const iss = 'https://smithclay.auth0.com/';
 
 // Reusable Authorizer function, set on `authorizer` field in serverless.yml
 module.exports.handler = (event, context, cb) => {
-    if (process.env.AWS_SAM_LOCAL || process.env.LOG_DEBUG) {
-        log.config.debug = true;
-    }
+  log.config.meta.function_version = process.env.AWS_LAMBDA_FUNCTION_VERSION;
+  if (process.env.AWS_SAM_LOCAL || process.env.LOG_DEBUG) {
+      log.config.debug = true;
+  }
 
-    log.debug(JSON.stringify(event));
+  log.debug(JSON.stringify(event));
 
-    if (event.authorizationToken) {
-      // Remove 'bearer ' from token:
-      const token = event.authorizationToken.substring(7);
-      // Make a request to the iss + .well-known/jwks.json URL:
-      request(
-        { url: `${iss}.well-known/jwks.json`, json: true },
-        (error, response, body) => {
-          if (error || response.statusCode !== 200) {
-            log.error(`jwks request error ${iss}: ${error}`, { responseCode: response.statusCode });
+  var token = event.queryStringParameters.auth;
+  if (!token && event.headers.Authorization) {
+    // Remove 'bearer ' from token:
+    token = event.headers.Authorization.substring(7);
+  }
+
+  if (token) {
+    // Make a request to the iss + .well-known/jwks.json URL:
+    request(
+      { url: `${iss}.well-known/jwks.json`, json: true },
+      (error, response, body) => {
+        if (error || response.statusCode !== 200) {
+          log.error(`jwks request error ${iss}: ${error}`, { responseCode: response.statusCode });
+          cb('Unauthorized');
+        }
+        const keys = body;
+        // Based on the JSON of `jwks` create a Pem:
+        const k = keys.keys[0];
+        const jwkArray = {
+          kty: k.kty,
+          n: k.n,
+          e: k.e,
+        };
+        const pem = jwkToPem(jwkArray);
+
+        // Verify the token:
+        jwk.verify(token, pem, { issuer: iss }, (err, decoded) => {
+          if (err) {
+            log.error(`Unauthorized user: ${err.message}`);
             cb('Unauthorized');
+          } else {
+            cb(null, generatePolicy(decoded.sub, 'Allow', event.methodArn));
           }
-          const keys = body;
-          // Based on the JSON of `jwks` create a Pem:
-          const k = keys.keys[0];
-          const jwkArray = {
-            kty: k.kty,
-            n: k.n,
-            e: k.e,
-          };
-          const pem = jwkToPem(jwkArray);
-
-          // Verify the token:
-          jwk.verify(token, pem, { issuer: iss }, (err, decoded) => {
-            if (err) {
-              log.error(`Unauthorized user: ${err.message}`);
-              cb('Unauthorized');
-            } else {
-              cb(null, generatePolicy(decoded.sub, 'Allow', event.methodArn));
-            }
-          });
         });
-    } else {
-      log.error(`No authorizationToken found in the header.`);
-      cb('Unauthorized');
-    }
-  };
+      });
+  } else {
+    log.error(`No auth parameter found in the query string.`);
+    log.info(JSON.stringify(event));
+    cb('Unauthorized');
+  }
+};
