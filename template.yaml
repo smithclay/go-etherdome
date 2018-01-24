@@ -8,6 +8,8 @@ Resources:
     Type: AWS::Serverless::Function
     Properties:
       Runtime: nodejs6.10
+      Tags:
+        AppName: TBD
       Handler: index.handler
       Description: "go-ethereum json-rpc lambda"
       CodeUri: ./etherdome
@@ -21,13 +23,12 @@ Resources:
             Method: post
       MemorySize: 1024
       Timeout: 10
-      Tags:
-        AppName: ThumbnailApp
   apiauthorizer:
     Type: AWS::Serverless::Function
-    FunctionName: apiauthorizer
     Properties:
       Runtime: nodejs6.10
+      Tags:
+        AppName: TBD
       Handler: index.handler
       Description: "Custom authorizer"
       CodeUri: ./authorizer
@@ -65,19 +66,19 @@ Resources:
   AmazonAPIGatewayPushToCloudWatchLogs:
     Type: AWS::IAM::Role
     Properties:
-        ManagedPolicyArns:
-          - "arn:aws:iam::aws:policy/service-role/AmazonAPIGatewayPushToCloudWatchLogs"
-        AssumeRolePolicyDocument:
-          Version: "2012-10-17"
-          Statement:
-            -
-              Sid: ""
-              Effect: "Allow"
-              Action:
-                - "sts:AssumeRole"
-              Principal:
-                Service:
-                  - "apigateway.amazonaws.com"
+      ManagedPolicyArns:
+        - "arn:aws:iam::aws:policy/service-role/AmazonAPIGatewayPushToCloudWatchLogs"
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          -
+            Sid: ""
+            Effect: "Allow"
+            Action:
+              - "sts:AssumeRole"
+            Principal:
+              Service:
+                - "apigateway.amazonaws.com"
   api:
     Type: AWS::Serverless::Api
     Properties:
