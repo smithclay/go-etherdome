@@ -1,8 +1,7 @@
 const log = require('lambda-log');
 const jsonRPC = require('./lib/json-rpc');
 
-// Start jsonRPC in background
-jsonRPC.start();
+
 
 exports.handler = (event, context, callback) => {
     context.callbackWaitsForEmptyEventLoop = false;
@@ -12,6 +11,21 @@ exports.handler = (event, context, callback) => {
         log.config.debug = true;
     }
 
+    log.info(require('child_process').execSync('ls -la /tmp').toString())
+
+    // Import chain file (from S3? Elasticache?)
+    var importOutput = jsonRPC.importChainSync('/tmp/fooChain', 'fooChain');
+    if (importOutput.error || importOutput.status !== 0) {
+        log.error(`chain import error: ${importOutput.error} ${importOutput.stderr}`);
+    }
+    log.info(`imported chain with status: ${importOutput.status}`);
+    if (importOutput.status !== 0) {
+        log.info(importOutput.stderr.toString());
+    }
+
+    // Start jsonRPC in background
+    var geth = jsonRPC.start();
+
     log.debug(JSON.stringify(event));
 
     jsonRPC.proxyRPCRequest(event.body, function(err, gatewayResponse) {
@@ -19,11 +33,18 @@ exports.handler = (event, context, callback) => {
             return callback(null, { statusCode: 500, body: err.toString() });
         }
 
-        // If write: save to S3 (or cache?)
-        // admin.exportChain('blockchain_backup')
-        // admin.importChain('blockchain_backup')
+        // memory-based filesystem (golang)
+        // to do: (long term) hack geth to make this a lot faster (?)
+        // to do: s3 sync
 
         // If read: return immediately
+        geth.kill('SIGINT');
+
+        var exportOutput = jsonRPC.exportChainSync('/tmp/fooChain', 'fooChain');
+        log.info(`exported chain with status: ${exportOutput.status}`);
+        if (exportOutput.error || exportOutput.status !== 0) {
+            log.error(`chain export error: ${importOutput.error} ${exportOutput.stderr}`);
+        }
 
         callback(null, gatewayResponse);
     });

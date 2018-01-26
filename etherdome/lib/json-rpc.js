@@ -2,14 +2,14 @@ const log = require('lambda-log');
 const http = require('http');
 const path = require('path');
 
-const { spawn } = require('child_process');
+const { spawn, spawnSync } = require('child_process');
 
 const GETH_BINARY_NAME = 'geth-linux-amd64-1.7.3-4bb3c89d';
 const GETH_RPC_HOST = 'localhost';
 const GETH_RPC_PORT = 8545;
 const RETRY_TIMEOUT_MS = 500;
 
-var proxyRPCRequest = function(requestBody, cb, retries=0) {
+const proxyRPCRequest = (requestBody, cb, retries=0) => {
     var opts = {
         host: GETH_RPC_HOST,
         port: GETH_RPC_PORT,
@@ -59,9 +59,27 @@ var proxyRPCRequest = function(requestBody, cb, retries=0) {
     post.end();
 }
 
-var start = () => {
+const exportChainSync = (datadir, chainFile) => {
+    return spawnSync(path.join(process.env.LAMBDA_TASK_ROOT, 'bin', GETH_BINARY_NAME),
+        ['--datadir', datadir,
+         'export', chainFile]
+    );
+};
+
+const importChainSync = (datadir, chainFile) => {
+    return spawnSync(path.join(process.env.LAMBDA_TASK_ROOT, 'bin', GETH_BINARY_NAME),
+        ['--datadir', datadir,
+        'import', chainFile]
+    );
+};
+
+const start = () => {
     const geth = spawn(path.join(process.env.LAMBDA_TASK_ROOT, 'bin', GETH_BINARY_NAME),
-        ['--dev', '--dev.period', '4', '--rpc', '--ipcdisable']
+        ['--dev',
+         '--dev.period', '4',
+         '--datadir', '/tmp/devnet',
+         '--rpc',
+         '--ipcdisable']
     );
 
     geth.stdout.on('data', (data) => {
@@ -81,5 +99,7 @@ var start = () => {
 
 module.exports = {
     proxyRPCRequest: proxyRPCRequest,
-    start: start
+    start: start,
+    exportChainSync: exportChainSync,
+    importChainSync: importChainSync
 };
