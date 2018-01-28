@@ -1,6 +1,8 @@
 const log = require('lambda-log');
 const jsonRPC = require('./lib/json-rpc');
+const storage = require('./lib/storage');
 
+const ChainData = require('./lib/chaindata');
 
 
 exports.handler = (event, context, callback) => {
@@ -11,41 +13,39 @@ exports.handler = (event, context, callback) => {
         log.config.debug = true;
     }
 
+    log.info(require('child_process').execSync('pwd').toString())
+
     log.info(require('child_process').execSync('ls -la /tmp').toString())
 
-    // Import chain file (from S3? Elasticache?)
-    var importOutput = jsonRPC.importChainSync('/tmp/fooChain', 'fooChain');
-    if (importOutput.error || importOutput.status !== 0) {
-        log.error(`chain import error: ${importOutput.error} ${importOutput.stderr}`);
-    }
-    log.info(`imported chain with status: ${importOutput.status}`);
-    if (importOutput.status !== 0) {
-        log.info(importOutput.stderr.toString());
-    }
-
-    // Start jsonRPC in background
-    var geth = jsonRPC.start();
-
     log.debug(JSON.stringify(event));
+    var authKey = 'foo-auth-key-1';
 
-    jsonRPC.proxyRPCRequest(event.body, function(err, gatewayResponse) {
+    var chainData = new ChainData(authKey, '/tmp/devnet-1');
+    chainData.import((err) => {
         if (err) {
             return callback(null, { statusCode: 500, body: err.toString() });
         }
+        var geth = jsonRPC.start('/tmp/devnet-1');
+        jsonRPC.proxyRPCRequest(event.body, function(err, gatewayResponse) {
+            if (err) {
+                return callback(null, { statusCode: 500, body: err.toString() });
+            }
 
-        // memory-based filesystem (golang)
-        // to do: (long term) hack geth to make this a lot faster (?)
-        // to do: s3 sync
+            geth.kill('SIGINT');
+            // TODO: try this flow with geth locally...
+            geth.on('exit', () => {
+                // If read: return immediately and skip this stepp (but still need to exit)
+                chainData.export((err) => {
+                    if (err) {
+                        log.error(err);
+                    } else {
+                        log.info('exported chain database to s3');
+                    }
+                    return callback(null, gatewayResponse);
+                });
+            })
 
-        // If read: return immediately
-        geth.kill('SIGINT');
-
-        var exportOutput = jsonRPC.exportChainSync('/tmp/fooChain', 'fooChain');
-        log.info(`exported chain with status: ${exportOutput.status}`);
-        if (exportOutput.error || exportOutput.status !== 0) {
-            log.error(`chain export error: ${importOutput.error} ${exportOutput.stderr}`);
-        }
-
-        callback(null, gatewayResponse);
+        });
     });
+
 }

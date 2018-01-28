@@ -14,3 +14,13 @@
 ### environment variables
 
     * `LOG_DEBUG`: include debug output in logs
+
+### localstack setup
+
+When running with AWS SAM Local, mock AWS services are used with localstack:
+
+```
+    $ localstack start --docker
+    $ aws --endpoint-url="http://127.0.0.1:4572" s3api create-bucket --bucket etherdome
+    $ aws --endpoint-url="http://127.0.0.1:4572" s3api list-buckets
+````

@@ -60,26 +60,29 @@ const proxyRPCRequest = (requestBody, cb, retries=0) => {
 }
 
 const exportChainSync = (datadir, chainFile) => {
+    var args = ['export', '--datadir', datadir, chainFile];
+    log.debug(`calling geth export: ${args.join(' ')}`, { command: true });
     return spawnSync(path.join(process.env.LAMBDA_TASK_ROOT, 'bin', GETH_BINARY_NAME),
-        ['--datadir', datadir,
-         'export', chainFile]
+        args
     );
 };
 
 const importChainSync = (datadir, chainFile) => {
+    var args = ['import', '--datadir', datadir, chainFile];
+    log.debug(`calling geth import: ${args.join(' ')}`, { command: true });
     return spawnSync(path.join(process.env.LAMBDA_TASK_ROOT, 'bin', GETH_BINARY_NAME),
-        ['--datadir', datadir,
-        'import', chainFile]
+        args
     );
 };
 
-const start = () => {
+const start = (datadir) => {
+    var args = [
+    '--datadir', datadir,
+    '--rpc',
+    '--ipcdisable'];
+    log.debug(`calling geth: ${args.join(' ')}`, { command: true });
     const geth = spawn(path.join(process.env.LAMBDA_TASK_ROOT, 'bin', GETH_BINARY_NAME),
-        ['--dev',
-         '--dev.period', '4',
-         '--datadir', '/tmp/devnet',
-         '--rpc',
-         '--ipcdisable']
+        args
     );
 
     geth.stdout.on('data', (data) => {
