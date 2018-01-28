@@ -77,9 +77,9 @@ const importChainSync = (datadir, chainFile) => {
 
 const start = (datadir) => {
     var args = [
-    '--datadir', datadir,
-    '--rpc',
-    '--ipcdisable'];
+        '--datadir', datadir,
+        '--rpc',
+        '--ipcdisable'];
     log.debug(`calling geth: ${args.join(' ')}`, { command: true });
     const geth = spawn(path.join(process.env.LAMBDA_TASK_ROOT, 'bin', GETH_BINARY_NAME),
         args
