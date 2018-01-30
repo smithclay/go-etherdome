@@ -2,19 +2,17 @@ Transform: AWS::Serverless-2016-10-31
 
 # TODO: Add tags
 # -- tier, type, author, app
-
+Description: cupel, easy and fast ethereum test networks
 Resources:
-  etherdome:
+  EtherdomeFn:
     Type: AWS::Serverless::Function
     Properties:
       Runtime: nodejs6.10
       Tags:
-        AppName: TBD
+        AppName: cupel
       Handler: index.handler
       Description: "go-ethereum json-rpc lambda"
       CodeUri: ./etherdome
-      # Hack to enforce the correct permissions
-      # TODO: Make this permission explicit (?)
       Policies:
         - AWSLambdaExecute # Managed Policy
         - Version: '2012-10-17' # Policy Document
@@ -26,11 +24,13 @@ Resources:
                 - s3:ListBucket
                 - s3:GetObjectACL
               Resource: !Sub 'arn:aws:s3:::${ChainDataStorageBucket}'
+      # Hack to enforce the correct permissions
+      # TODO: Make this permission explicit (?)
       Events:
         ProxyApiRoot:
           Type: Api
           Properties:
-            RestApiId: !Ref api
+            RestApiId: !Ref JSONRPCApiGateway
             Path: /
             Method: post
       Environment:
@@ -40,12 +40,12 @@ Resources:
       Timeout: 10
   ChainDataStorageBucket:
     Type: AWS::S3::Bucket
-  apiauthorizer:
+  ApiAuthorizerFn:
     Type: AWS::Serverless::Function
     Properties:
       Runtime: nodejs6.10
       Tags:
-        AppName: TBD
+        AppName: cupel
       Handler: index.handler
       Description: "Custom authorizer"
       CodeUri: ./authorizer
@@ -96,7 +96,7 @@ Resources:
             Principal:
               Service:
                 - "apigateway.amazonaws.com"
-  api:
+  JSONRPCApiGateway:
     Type: AWS::Serverless::Api
     Properties:
       StageName: Prod
@@ -110,7 +110,7 @@ Resources:
               x-amazon-apigateway-integration:
                 httpMethod: POST
                 type: aws_proxy
-                uri: !Sub arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${etherdome.Arn}/invocations
+                uri: !Sub arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${EtherdomeFn.Arn}/invocations
                 responses: {}
               security:
                 - authorizer: []
@@ -121,7 +121,7 @@ Resources:
             in: header
             x-amazon-apigateway-authtype: custom
             x-amazon-apigateway-authorizer:
-              authorizerUri: !Sub arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${apiauthorizer.Arn}/invocations
+              authorizerUri: !Sub arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${ApiAuthorizerFn.Arn}/invocations
               identitySource: method.request.querystring.auth
               authorizerResultTtlInSeconds: 300
               authorizerCredentials: !Sub ${AuthorizerInvokeRole.Arn}
@@ -132,7 +132,7 @@ Outputs:
     Value: !Join
       - ''
       - - https://
-        - !Ref api
+        - !Ref JSONRPCApiGateway
         - '.execute-api.'
         - !Ref 'AWS::Region'
         - '.amazonaws.com/Prod'

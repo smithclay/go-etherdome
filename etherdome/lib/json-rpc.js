@@ -33,7 +33,7 @@ const proxyRPCRequest = (requestBody, cb, retries=0) => {
             var gatewayResponse = {
                 statusCode: 200,
                 headers: {
-                    'application/type': 'text/json'
+                    'Content-Type': 'application/json'
                 },
                 body: data
             };
