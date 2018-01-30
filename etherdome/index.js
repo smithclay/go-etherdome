@@ -1,9 +1,9 @@
 const log = require('lambda-log');
 const jsonRPC = require('./lib/json-rpc');
 const storage = require('./lib/storage');
+const crypto = require('crypto');
 
 const ChainData = require('./lib/chaindata');
-
 
 exports.handler = (event, context, callback) => {
     context.callbackWaitsForEmptyEventLoop = false;
@@ -16,14 +16,20 @@ exports.handler = (event, context, callback) => {
     log.info(require('child_process').execSync('ls -la /tmp').toString())
 
     log.debug(JSON.stringify(event));
-    var authKey = 'foo-auth-key-1';
 
-    var chainData = new ChainData(authKey, '/tmp/devnet-1');
+    if (!event.queryStringParameters.auth) {
+        return callback(null, { statusCode: 500, body: 'No authorization key found.' });
+    }
+
+    var authKeyHash = crypto.createHash('md5').update(event.queryStringParameters.auth).digest("hex");
+    var datadir = `/tmp/datadir-${authKeyHash}`;
+    var chainData = new ChainData(authKeyHash, datadir);
+
     chainData.import((err) => {
         if (err) {
             return callback(null, { statusCode: 500, body: err.toString() });
         }
-        var geth = jsonRPC.start('/tmp/devnet-1');
+        var geth = jsonRPC.start(datadir);
 
         geth.on('close', (statusCode) => {
             if (statusCode !== 0) {

@@ -15,6 +15,17 @@ Resources:
       CodeUri: ./etherdome
       # Hack to enforce the correct permissions
       # TODO: Make this permission explicit (?)
+      Policies:
+        - AWSLambdaExecute # Managed Policy
+        - Version: '2012-10-17' # Policy Document
+          Statement:
+            - Effect: Allow
+              Action:
+                - s3:GetObject
+                - s3:PutObject
+                - s3:ListBucket
+                - s3:GetObjectACL
+              Resource: !Sub 'arn:aws:s3:::${ChainDataStorageBucket}'
       Events:
         ProxyApiRoot:
           Type: Api
@@ -22,8 +33,13 @@ Resources:
             RestApiId: !Ref api
             Path: /
             Method: post
+      Environment:
+        Variables:
+          CHAINDATA_S3_BUCKET: !Ref ChainDataStorageBucket
       MemorySize: 1024
       Timeout: 10
+  ChainDataStorageBucket:
+    Type: AWS::S3::Bucket
   apiauthorizer:
     Type: AWS::Serverless::Function
     Properties:

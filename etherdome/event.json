@@ -1,57 +1,59 @@
 {
-  "body": "{\"jsonrpc\":\"2.0\",\"method\":\"web3_clientVersion\",\"params\":[],\"id\":67}",
-  "resource": "/{proxy+}",
-  "requestContext": {
-    "resourceId": "123456",
-    "apiId": "1234567890",
-    "resourcePath": "/{proxy+}",
-    "httpMethod": "POST",
-    "requestId": "c6af9ac6-7b61-11e6-9a41-93e8deadbeef",
-    "accountId": "123456789012",
-    "identity": {
-      "apiKey": null,
-      "userArn": null,
-      "cognitoAuthenticationType": null,
-      "caller": null,
-      "userAgent": "Custom User Agent String",
-      "user": null,
-      "cognitoIdentityPoolId": null,
-      "cognitoIdentityId": null,
-      "cognitoAuthenticationProvider": null,
-      "sourceIp": "127.0.0.1",
-      "accountId": null
-    },
-    "stage": "prod"
+  "resource": "/",
+  "path": "/",
+  "httpMethod": "POST",
+  "headers": {
+    "Accept": "*/*",
+    "CloudFront-Forwarded-Proto": "https",
+    "CloudFront-Is-Desktop-Viewer": "true",
+    "CloudFront-Is-Mobile-Viewer": "false",
+    "CloudFront-Is-SmartTV-Viewer": "false",
+    "CloudFront-Is-Tablet-Viewer": "false",
+    "CloudFront-Viewer-Country": "US",
+    "Content-Type": "application/x-www-form-urlencoded",
+    "Host": "bc31oo8gwh.execute-api.us-west-2.amazonaws.com",
+    "User-Agent": "curl/7.54.0",
+    "Via": "1.1 939ea9d62ec616846d41b16cea0dc65b.cloudfront.net (CloudFront)",
+    "X-Amz-Cf-Id": "c8UVSDCEjK_O1_rZ1pTBZpUe2h-0ix64bgw-oOS9R2nobG-AhNoWyA==",
+    "X-Amzn-Trace-Id": "Root=1-5a6fe225-0b9ef34e663c0b96305457ff",
+    "X-Forwarded-For": "67.188.11.144, 54.239.203.115",
+    "X-Forwarded-Port": "443",
+    "X-Forwarded-Proto": "https"
   },
   "queryStringParameters": {
-    "foo": "bar"
+    "auth": "eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiIsImtpZCI6Ik5UTkRSa1ZDTkVVeVJqQXpNVVl4T0RORlFqQTFNVVkzTVRZMk1ESXpRalpCTmpVek5UaEVPQSJ9.eyJpc3MiOiJodHRwczovL3NtaXRoY2xheS5hdXRoMC5jb20vIiwic3ViIjoiQ1VHbW5OTlYwTGk5SEg3SXVGWjNySkdJQnhUR2VqTGlAY2xpZW50cyIsImF1ZCI6Imh0dHBzOi8vM25zZms2ZTN6aS5leGVjdXRlLWFwaS51cy13ZXN0LTIuYW1hem9uYXdzLmNvbS9Qcm9kLyIsImlhdCI6MTUxNzI3ODc0OCwiZXhwIjoxNTE3MzY1MTQ4LCJhenAiOiJDVUdtbk5OVjBMaTlISDdJdUZaM3JKR0lCeFRHZWpMaSIsImd0eSI6ImNsaWVudC1jcmVkZW50aWFscyJ9.HjGE5ofKeh4ZetkjtSmDupIp0S9JvYYDQn6RKxPsKdP3-lVqrDd0-A7dXdJ_n8cfphODDuG-VVJgCJ87zH0rMmdp7SGHx4EVGqE9tnSnqZ1cdBu2pBaiDlEocWfy1JoozRu_feL25tZ6ykMXNW82SgtMTJ2utnqlrW2t-ownbRdE4uNZjq3J7b2Sr2Q7ZxXC0Ju-Smu6m_0dd02xp_LR0RXL--Oa0qT-NjP0ud9Vp-8wsRiEoCS5-Rnh2nIz9PUXbLQiJaVFzr-dGdkqfF5IjiScNxIfwZjS-O-GaFU8zQq3RBCwmE-aCF2CLOLzD7zLEJEILVPPddIdLVwtPnlCQQ"
   },
-  "headers": {
-    "Via": "1.1 08f323deadbeefa7af34d5feb414ce27.cloudfront.net (CloudFront)",
-    "Accept-Language": "en-US,en;q=0.8",
-    "CloudFront-Is-Desktop-Viewer": "true",
-    "CloudFront-Is-SmartTV-Viewer": "false",
-    "CloudFront-Is-Mobile-Viewer": "false",
-    "X-Forwarded-For": "127.0.0.1, 127.0.0.2",
-    "CloudFront-Viewer-Country": "US",
-    "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8",
-    "Upgrade-Insecure-Requests": "1",
-    "X-Forwarded-Port": "443",
-    "Host": "1234567890.execute-api.us-east-1.amazonaws.com",
-    "X-Forwarded-Proto": "https",
-    "X-Amz-Cf-Id": "aaaaaaaaaae3VYQb9jd-nvCd-de396Uhbp027Y2JvkCPNLmGJHqlaA==",
-    "CloudFront-Is-Tablet-Viewer": "false",
-    "Cache-Control": "max-age=0",
-    "User-Agent": "Custom User Agent String",
-    "CloudFront-Forwarded-Proto": "https",
-    "Accept-Encoding": "gzip, deflate, sdch"
+  "pathParameters": null,
+  "stageVariables": null,
+  "requestContext": {
+    "resourceId": "2snm52cdta",
+    "authorizer": {
+      "principalId": "CUGmnNNV0Li9HH7IuFZ3rJGIBxTGejLi@clients"
+    },
+    "resourcePath": "/",
+    "httpMethod": "POST",
+    "requestTime": "30/Jan/2018:03:10:29 +0000",
+    "path": "/Prod/",
+    "accountId": "275197385476",
+    "protocol": "HTTP/1.1",
+    "stage": "Prod",
+    "requestTimeEpoch": 1517281829638,
+    "requestId": "204d5ac6-056b-11e8-9a69-c39c253420c6",
+    "identity": {
+      "cognitoIdentityPoolId": null,
+      "accountId": null,
+      "cognitoIdentityId": null,
+      "caller": null,
+      "sourceIp": "67.188.11.144",
+      "accessKey": null,
+      "cognitoAuthenticationType": null,
+      "cognitoAuthenticationProvider": null,
+      "userArn": null,
+      "userAgent": "curl/7.54.0",
+      "user": null
+    },
+    "apiId": "bc31oo8gwh"
   },
-  "pathParameters": {
-    "proxy": "/examplepath"
-  },
-  "httpMethod": "POST",
-  "stageVariables": {
-    "baz": "qux"
-  },
-  "path": "/examplepath"
+  "body": "{\"jsonrpc\":\"2.0\",\"method\":\"web3_clientVersion\",\"params\":[],\"id\":67}",
+  "isBase64Encoded": false
 }

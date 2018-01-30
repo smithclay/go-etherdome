@@ -3,9 +3,9 @@
 const fs = require('fs');
 const AWS = require('aws-sdk');
 const path = require('path');
+const log = require('lambda-log');
 
-const S3_BUCKET_NAME = 'etherdome';
-
+const S3_BUCKET_NAME = process.env.CHAINDATA_S3_BUCKET || 'etherdome';
 const BASE_DIR = '/tmp';
 
 var s3options_local = {
@@ -29,15 +29,20 @@ var getFile = (fileKey, cb) => {
     file.on('close', function(){
         cb();
     });
-    s3.getObject({Key: fileKey}).createReadStream().on('error', function(err){
-        cb(err);
+    s3.getObject({Key: fileKey}).createReadStream().on('error', (err) => {
+        if (err) {
+            log.error(`s3 GetObject ${S3_BUCKET_NAME} ${fileKey} failed: ${err}`);
+            return cb(err);
+        }
+        cb();
     }).pipe(file);
 };
 
 var putLocalFile = (fileKey, cb) => {
     var stream = fs.createReadStream(path.join(BASE_DIR, fileKey));
-    s3.putObject({Key: fileKey, Body: stream}, function(err, data) {
+    s3.putObject({Key: fileKey, Body: stream}, (err, data) => {
       if (err) {
+        log.error(`s3 PutObject failed: ${err}`);
         return cb(err, null);
       }
       cb(null, data);
