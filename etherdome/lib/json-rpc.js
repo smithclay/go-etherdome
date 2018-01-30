@@ -1,3 +1,5 @@
+'use strict';
+
 const log = require('lambda-log');
 const http = require('http');
 const path = require('path');

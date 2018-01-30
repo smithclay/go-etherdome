@@ -13,8 +13,6 @@ exports.handler = (event, context, callback) => {
         log.config.debug = true;
     }
 
-    log.info(require('child_process').execSync('pwd').toString())
-
     log.info(require('child_process').execSync('ls -la /tmp').toString())
 
     log.debug(JSON.stringify(event));
@@ -26,13 +24,20 @@ exports.handler = (event, context, callback) => {
             return callback(null, { statusCode: 500, body: err.toString() });
         }
         var geth = jsonRPC.start('/tmp/devnet-1');
-        jsonRPC.proxyRPCRequest(event.body, function(err, gatewayResponse) {
+
+        geth.on('close', (statusCode) => {
+            if (statusCode !== 0) {
+                return callback(null, { statusCode: 500, body: 'error serving request' });
+            }
+        });
+
+        jsonRPC.proxyRPCRequest(event.body, (err, gatewayResponse) => {
             if (err) {
                 return callback(null, { statusCode: 500, body: err.toString() });
             }
 
             geth.kill('SIGINT');
-            // TODO: try this flow with geth locally...
+
             geth.on('exit', () => {
                 // If read: return immediately and skip this stepp (but still need to exit)
                 chainData.export((err) => {
@@ -43,8 +48,7 @@ exports.handler = (event, context, callback) => {
                     }
                     return callback(null, gatewayResponse);
                 });
-            })
-
+            });
         });
     });
 

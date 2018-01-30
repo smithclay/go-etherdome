@@ -8,7 +8,7 @@ const path = require('path');
 // TODO: Separate S3 Backend into another
 
 // Empty clique network chain
-const DEFAULT_INITIAL_CHAIN =  path.join(__dirname, '../etherdome-export.bk');
+const DEFAULT_INITIAL_CHAIN =  path.join(__dirname, '../network/etherdome-export.bk');
 
 class ChainData {
     constructor(name, datadir = '/tmp/datadir') {
@@ -29,7 +29,8 @@ class ChainData {
             return cb(importOutput.stderr.toString());
         }
         this.imported = true;
-        cb()
+        this.importFileName = chainBackupFile;
+        cb();
     }
 
     import(cb = () => {}) {
