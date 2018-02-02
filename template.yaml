@@ -3,6 +3,15 @@ Transform: AWS::Serverless-2016-10-31
 # TODO: Add tags
 # -- tier, type, author, app
 Description: cupel, easy and fast ethereum test networks
+
+Parameters:
+    ApiGatewayCertificateArn:
+        Type: String
+        Default: arn:aws:acm:us-east-1:275197385476:certificate/43b02aea-4cba-49f5-841a-c3442183cbc2
+    HostedZoneName:
+        Type: String
+        Default: cupel.io
+
 Resources:
   EtherdomeFn:
     Type: AWS::Serverless::Function
@@ -38,8 +47,10 @@ Resources:
           CHAINDATA_S3_BUCKET: !Ref ChainDataStorageBucket
       MemorySize: 1024
       Timeout: 10
+
   ChainDataStorageBucket:
     Type: AWS::S3::Bucket
+
   ApiAuthorizerFn:
     Type: AWS::Serverless::Function
     Properties:
@@ -51,6 +62,7 @@ Resources:
       CodeUri: ./authorizer
       MemorySize: 512
       Timeout: 15
+
   LambdaInvokePolicy:
     Type: AWS::IAM::ManagedPolicy
     Properties:
@@ -64,6 +76,7 @@ Resources:
             Action:
             - "lambda:InvokeFunction"
             Resource: "*"
+
   AuthorizerInvokeRole:
     Type: AWS::IAM::Role
     Properties:
@@ -80,6 +93,7 @@ Resources:
               - "sts:AssumeRole"
       ManagedPolicyArns:
         - Ref: LambdaInvokePolicy
+
   AmazonAPIGatewayPushToCloudWatchLogs:
     Type: AWS::IAM::Role
     Properties:
@@ -96,6 +110,37 @@ Resources:
             Principal:
               Service:
                 - "apigateway.amazonaws.com"
+
+  # based on: https://github.com/daveygit2050/serverless-passgen/blob/2831e9068d2f0705c84af19c92a3f448a0c28f3e/serverless.yml
+  ApiGatewayBasePathMapping:
+    Type: AWS::ApiGateway::BasePathMapping
+    Properties:
+      BasePath: Prod
+      DomainName:
+        Ref: ApiGatewayDomainName
+      RestApiId:
+        Ref: JSONRPCApiGateway
+      Stage: Prod
+
+  ApiGatewayDomainName:
+    Type: AWS::ApiGateway::DomainName
+    Properties:
+      CertificateArn: !Ref ApiGatewayCertificateArn
+      DomainName: 'testnet.${HostedZoneName}'
+
+  Route53RecordSet:
+    Type: AWS::Route53::RecordSet
+    Properties:
+      AliasTarget:
+        DNSName:
+          Fn::GetAtt:
+            - ApiGatewayDomainName
+            - DistributionDomainName
+        HostedZoneId: Z2FDTNDATAQYW2
+      HostedZoneName: !Sub '${HostedZoneName}.'
+      Name: !Sub 'testnet.${HostedZoneName}.'
+      Type: A
+
   JSONRPCApiGateway:
     Type: AWS::Serverless::Api
     Properties:
