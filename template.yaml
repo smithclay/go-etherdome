@@ -1,9 +1,7 @@
 Transform: AWS::Serverless-2016-10-31
 
 # TODO: Add tags
-# -- tier, type, author, app
 Description: cupel, easy and fast ethereum test networks
-
 Parameters:
     ApiGatewayCertificateArn:
         Type: String
@@ -116,17 +114,15 @@ Resources:
     Type: AWS::ApiGateway::BasePathMapping
     Properties:
       BasePath: Prod
-      DomainName:
-        Ref: ApiGatewayDomainName
-      RestApiId:
-        Ref: JSONRPCApiGateway
+      DomainName: !Ref ApiGatewayDomainName
+      RestApiId: !Ref JSONRPCApiGateway
       Stage: Prod
 
   ApiGatewayDomainName:
     Type: AWS::ApiGateway::DomainName
     Properties:
       CertificateArn: !Ref ApiGatewayCertificateArn
-      DomainName: 'testnet.${HostedZoneName}'
+      DomainName: !Sub 'testnet.${HostedZoneName}'
 
   Route53RecordSet:
     Type: AWS::Route53::RecordSet
