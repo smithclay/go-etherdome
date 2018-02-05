@@ -22,6 +22,7 @@ const generatePolicy = (principalId, effect, resource) => {
     statementOne.Resource = resource;
     policyDocument.Statement[0] = statementOne;
     authResponse.policyDocument = policyDocument;
+    authResponse.context = {};
   }
   return authResponse;
 };
@@ -68,7 +69,12 @@ module.exports.handler = (event, context, cb) => {
             log.error(`Unauthorized user: ${err.message}`);
             cb('Unauthorized');
           } else {
-            cb(null, generatePolicy(decoded.sub, 'Allow', event.methodArn));
+            var policy = generatePolicy(decoded.sub, 'Allow', event.methodArn);
+            // Add sub to 'context' so we can identify account in following request
+            // https://docs.aws.amazon.com/apigateway/latest/developerguide/use-custom-authorizer.html#api-gateway-custom-authorizer-output
+            // https://auth0.com/docs/tokens/id-token
+            policy.context.sub = decoded.sub;
+            cb(null, policy);
           }
         });
       });
