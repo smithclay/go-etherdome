@@ -126,12 +126,18 @@ Resources:
         Variables:
           TABLE_NAME: !Ref NetworksTable
       Events:
-        CreateNetwork:
+        Networks:
           Type: Api
           Properties:
             RestApiId: !Ref RestApiGateway
             Path: /networks
-            Method: post
+            Method: ANY
+        Network:
+          Type: Api
+          Properties:
+            RestApiId: !Ref RestApiGateway
+            Path: /networks/{networkId}
+            Method: ANY
 
   #
   # Management REST API Gateway
@@ -176,7 +182,16 @@ Resources:
           - https
         paths:
           "/networks":
-            post:
+            x-amazon-apigateway-any-method:
+              x-amazon-apigateway-integration:
+                httpMethod: POST
+                type: aws_proxy
+                uri: !Sub arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${RestApiFn.Arn}/invocations
+                responses: {}
+              security:
+                - authorizer: []
+          "/networks/{networkId}":
+            x-amazon-apigateway-any-method:
               x-amazon-apigateway-integration:
                 httpMethod: POST
                 type: aws_proxy

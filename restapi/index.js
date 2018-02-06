@@ -4,7 +4,7 @@ const AWS = require('aws-sdk');
 if (process.env.AWS_SAM_LOCAL) {
     // awslocal dynamodb create-table --table-name NetworksTable --attribute-definitions AttributeName=id,AttributeType=S --key-schema AttributeName=id,KeyType=HASH --provisioned-throughput ReadCapacityUnits=5,WriteCapacityUnits=5
     AWS.config.update({
-      endpoint: "http://http://192.168.0.105:4569"
+      endpoint: "http://192.168.0.105:4569"
     });
 }
 
