@@ -136,6 +136,33 @@ Resources:
   #
   # Management REST API Gateway
   #
+
+  RestApiGatewayBasePathMapping:
+    Type: AWS::ApiGateway::BasePathMapping
+    Properties:
+      DomainName: !Ref RestApiGatewayDomainName
+      RestApiId: !Ref RestApiGateway
+      Stage: Prod
+
+  RestApiGatewayDomainName:
+    Type: AWS::ApiGateway::DomainName
+    Properties:
+      CertificateArn: !Ref ApiGatewayCertificateArn
+      DomainName: !Sub 'api.${HostedZoneName}'
+
+  RestApiGatewayRoute53RecordSet:
+    Type: AWS::Route53::RecordSet
+    Properties:
+      AliasTarget:
+        DNSName:
+          Fn::GetAtt:
+            - RestApiGatewayDomainName
+            - DistributionDomainName
+        HostedZoneId: Z2FDTNDATAQYW2
+      HostedZoneName: !Sub '${HostedZoneName}.'
+      Name: !Sub 'api.${HostedZoneName}.'
+      Type: A
+
   # TODO: CORS support
   RestApiGateway:
     Type: AWS::Serverless::Api
@@ -191,10 +218,9 @@ Resources:
               Service:
                 - "apigateway.amazonaws.com"
 
-  JSONRPCApiGatewayApiGatewayBasePathMapping:
+  JSONRPCApiGatewayBasePathMapping:
     Type: AWS::ApiGateway::BasePathMapping
     Properties:
-      BasePath: Prod
       DomainName: !Ref JSONRPCApiGatewayDomainName
       RestApiId: !Ref JSONRPCApiGateway
       Stage: Prod

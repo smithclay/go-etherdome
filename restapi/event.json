@@ -1,0 +1,60 @@
+{
+    "resource": "/networks",
+    "path": "/networks",
+    "httpMethod": "POST",
+    "headers": {
+      "Accept": "*/*",
+      "CloudFront-Forwarded-Proto": "https",
+      "CloudFront-Is-Desktop-Viewer": "true",
+      "CloudFront-Is-Mobile-Viewer": "false",
+      "CloudFront-Is-SmartTV-Viewer": "false",
+      "CloudFront-Is-Tablet-Viewer": "false",
+      "CloudFront-Viewer-Country": "US",
+      "content-type": "application/x-www-form-urlencoded",
+      "Host": "cy3ih5bbm0.execute-api.us-west-2.amazonaws.com",
+      "User-Agent": "curl/7.54.0",
+      "Via": "2.0 81871f1c889cc44b6c25e3ef722a3801.cloudfront.net (CloudFront)",
+      "X-Amz-Cf-Id": "4NddFC_Lor6Go0S9-Z1SO4KYhP5HLMJBtvpYD0vBwfUCkyJG0sEQ1w==",
+      "X-Amzn-Trace-Id": "Root=1-5a77b405-395316345c29061d10465f78",
+      "X-Forwarded-For": "67.188.11.144, 54.239.203.108",
+      "X-Forwarded-Port": "443",
+      "X-Forwarded-Proto": "https"
+    },
+    "queryStringParameters": {
+      "auth": "eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiIsImtpZCI6Ik5UTkRSa1ZDTkVVeVJqQXpNVVl4T0RORlFqQTFNVVkzTVRZMk1ESXpRalpCTmpVek5UaEVPQSJ9.eyJpc3MiOiJodHRwczovL3NtaXRoY2xheS5hdXRoMC5jb20vIiwic3ViIjoiQ1VHbW5OTlYwTGk5SEg3SXVGWjNySkdJQnhUR2VqTGlAY2xpZW50cyIsImF1ZCI6Imh0dHBzOi8vM25zZms2ZTN6aS5leGVjdXRlLWFwaS51cy13ZXN0LTIuYW1hem9uYXdzLmNvbS9Qcm9kLyIsImlhdCI6MTUxNzc5MDg3MCwiZXhwIjoxNTE3ODc3MjcwLCJhenAiOiJDVUdtbk5OVjBMaTlISDdJdUZaM3JKR0lCeFRHZWpMaSIsImd0eSI6ImNsaWVudC1jcmVkZW50aWFscyJ9.eIAcNDyo6gA9Osvg-j3r05qLzULo54MUK8pSRqIFgTHuptyZ-bbAh9iMFmKhTmE9UuUUaqesx7431xb51sRDpUECmuvXizNrj4nlLAGM3_4RmhGEGqwYgJUny_YM-MFBPUlKgiCtsQhFWW_wKnlgqh-k8MrevA--mLINeZL-7HXKsmrrv-oR37bl2wHrmQ1XMyeVVUxKxWAYKD16IeIJd0hFfkNPo8_GCsEJpVlFapua_oTPVlbfwnhRcbcHmjspPt0204lkrljbelUE7PqL9rxFXAofUeySmi4tYdUEOm7N7N4JQUh9Tdy-G_iT3CJ9IQuW9rjAXrgAwljY0Lyo4g"
+    },
+    "pathParameters": null,
+    "stageVariables": null,
+    "requestContext": {
+      "resourceId": "1fiuvd",
+      "authorizer": {
+        "sub": "CUGmnNNV0Li9HH7IuFZ3rJGIBxTGejLi@clients",
+        "principalId": "CUGmnNNV0Li9HH7IuFZ3rJGIBxTGejLi@clients"
+      },
+      "resourcePath": "/networks",
+      "httpMethod": "POST",
+      "requestTime": "05/Feb/2018:01:31:49 +0000",
+      "path": "/Prod/networks",
+      "accountId": "275197385476",
+      "protocol": "HTTP/1.1",
+      "stage": "Prod",
+      "requestTimeEpoch": 1517794309191,
+      "requestId": "55eb5644-0a14-11e8-a7f0-a906189a6e49",
+      "identity": {
+        "cognitoIdentityPoolId": null,
+        "accountId": null,
+        "cognitoIdentityId": null,
+        "caller": null,
+        "sourceIp": "67.188.11.144",
+        "accessKey": null,
+        "cognitoAuthenticationType": null,
+        "cognitoAuthenticationProvider": null,
+        "userArn": null,
+        "userAgent": "curl/7.54.0",
+        "user": null
+      },
+      "apiId": "cy3ih5bbm0"
+    },
+    "body": "{\"jsonrpc\":\"2.0\",\"method\":\"web3_clientVersion\",\"params\":[],\"id\":67}",
+    "isBase64Encoded": false
+  }
