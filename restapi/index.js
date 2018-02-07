@@ -1,5 +1,6 @@
 const log = require('lambda-log');
 const AWS = require('aws-sdk');
+const uuidv1 = require('uuid/v1')
 
 if (process.env.AWS_SAM_LOCAL) {
     // awslocal dynamodb create-table --table-name NetworksTable --attribute-definitions AttributeName=user_id,AttributeType=S --key-schema AttributeName=user_id,KeyType=HASH --provisioned-throughput ReadCapacityUnits=1,WriteCapacityUnits=1
@@ -35,7 +36,9 @@ const CreateNetwork = (userId, cb) => {
         TableName: process.env.TABLE_NAME,
         Item: {
             "user_id": userId,
-            "name": 'This is a test network name',
+            // TODO: generate funny name
+            // "name": 'This is a test network name',
+            "uuid": uuidv1(),
             "created_on": (new Date()).toISOString()
         }
     };
@@ -50,21 +53,45 @@ const CreateNetwork = (userId, cb) => {
     });
 }
 
+const GetNetwork = (userId, networkId, cb) => {
+    var params = {
+        TableName: process.env.TABLE_NAME,
+        AttributesToGet: ["user_id"],
+        Key: {
+            "userID": userId
+        }
+    };
+    docClient.getItem(params, function(err, data) {
+        if (err) {
+            return cb(err);
+        }
+        cb(null, data);
+    });
+}
+
 exports.handler = (event, context, callback) => {
   log.info(JSON.stringify(event));
 
   var principalId = event.requestContext.authorizer.principalId;
-  // https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/GettingStarted.NodeJs.03.html
-  ListNetworks(principalId, (err, data) => {
-    if (err) {
-        return callback(null, { statusCode: 500, body: err });
-    }
-    callback(null, { statusCode: 200, body: JSON.stringify(data) });
-  });
-  /*CreateNetwork(principalId, (err, data) => {
-    if (err) {
-        return callback(null, { statusCode: 500, body: err });
-    }
-    callback(null, { statusCode: 201, body: JSON.stringify(data) });
-  });*/
+  if (event.path === '/networks' && event.httpMethod === 'GET') {
+    ListNetworks(principalId, (err, data) => {
+        if (err) {
+            return callback(null, { statusCode: 500, body: err });
+        }
+        callback(null, { statusCode: 200, body: JSON.stringify(data) });
+     });
+  } else if (event.path === '/networks' && event.httpMethod === 'POST') {
+    CreateNetwork(principalId, (err, data) => {
+        if (err) {
+            return callback(null, { statusCode: 500, body: err });
+        }
+        callback(null, { statusCode: 201, body: JSON.stringify(data) });
+    });
+  } else if (event.resource === '/networks/{networkId}' && event.httpMethod === 'GET') {
+    callback(null, { statusCode: 501, body: 'not implemented' });
+  } else if (event.resource === '/networks/{networkId}' && event.httpMethod === 'DELETE') {
+    callback(null, { statusCode: 501, body: 'not implemented' });
+  } else {
+    callback(null, { statusCode: 404, body: 'not found' });
+  }
 };

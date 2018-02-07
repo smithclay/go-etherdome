@@ -1,7 +1,7 @@
 {
     "resource": "/networks",
     "path": "/networks",
-    "httpMethod": "POST",
+    "httpMethod": "GET",
     "headers": {
       "Accept": "*/*",
       "CloudFront-Forwarded-Proto": "https",
