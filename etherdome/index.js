@@ -21,7 +21,6 @@ exports.handler = (event, context, callback) => {
         return callback(null, { statusCode: 500, body: 'No authorization key found.' });
     }
     var userId = event.requestContext.authorizer.principalId;
-    //var authKeyHash = crypto.createHash('md5').update(userId).digest("hex");
     var datadir = `/tmp/datadir-${userId}`;
     var chainData = new ChainData(userId, datadir);
 

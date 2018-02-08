@@ -98,9 +98,13 @@ Resources:
       AttributeDefinitions:
         - AttributeName: user_id
           AttributeType: S
+        - AttributeName: network_id
+          AttributeType: S
       KeySchema:
         - AttributeName: user_id
           KeyType: HASH
+        - AttributeName: network_id
+          KeyType: RANGE
       ProvisionedThroughput:
         ReadCapacityUnits: 1
         WriteCapacityUnits: 1
@@ -116,6 +120,17 @@ Resources:
       CodeUri: ./restapi
       Policies:
         - AWSLambdaExecute
+        - Version: '2012-10-17'
+          Statement:
+            - Effect: Allow
+              Action:
+                - dynamodb:Query
+                - dynamodb:Scan
+                - dynamodb:GetItem
+                - dynamodb:PutItem
+                - dynamodb:UpdateItem
+                - dynamodb:DeleteItem
+              Resource: 'arn:aws:dynamodb:us-west-2:*:*'
       MemorySize: 256
       Timeout: 15
       Environment:
@@ -138,6 +153,18 @@ Resources:
   #
   # Management REST API Gateway
   #
+
+  # Explicit API Gateway permission: workaround for ANY method
+  # https://github.com/awslabs/serverless-application-model/issues/59
+  RestApiGatewayLambdaPermission:
+    Type: AWS::Lambda::Permission
+    DependsOn:
+    - RestApiGateway
+    - RestApiFn
+    Properties:
+      Action: lambda:InvokeFunction
+      FunctionName: !Ref RestApiFn
+      Principal: apigateway.amazonaws.com
 
   RestApiGatewayBasePathMapping:
     Type: AWS::ApiGateway::BasePathMapping
