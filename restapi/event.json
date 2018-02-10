@@ -1,7 +1,7 @@
 {
-    "resource": "/networks",
+    "resource": "/networks/{networkId}",
     "path": "/networks",
-    "httpMethod": "GET",
+    "httpMethod": "DELETE",
     "headers": {
       "Accept": "*/*",
       "CloudFront-Forwarded-Proto": "https",
@@ -23,7 +23,7 @@
     "queryStringParameters": {
       "auth": "eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiIsImtpZCI6Ik5UTkRSa1ZDTkVVeVJqQXpNVVl4T0RORlFqQTFNVVkzTVRZMk1ESXpRalpCTmpVek5UaEVPQSJ9.eyJpc3MiOiJodHRwczovL3NtaXRoY2xheS5hdXRoMC5jb20vIiwic3ViIjoiQ1VHbW5OTlYwTGk5SEg3SXVGWjNySkdJQnhUR2VqTGlAY2xpZW50cyIsImF1ZCI6Imh0dHBzOi8vM25zZms2ZTN6aS5leGVjdXRlLWFwaS51cy13ZXN0LTIuYW1hem9uYXdzLmNvbS9Qcm9kLyIsImlhdCI6MTUxNzc5MDg3MCwiZXhwIjoxNTE3ODc3MjcwLCJhenAiOiJDVUdtbk5OVjBMaTlISDdJdUZaM3JKR0lCeFRHZWpMaSIsImd0eSI6ImNsaWVudC1jcmVkZW50aWFscyJ9.eIAcNDyo6gA9Osvg-j3r05qLzULo54MUK8pSRqIFgTHuptyZ-bbAh9iMFmKhTmE9UuUUaqesx7431xb51sRDpUECmuvXizNrj4nlLAGM3_4RmhGEGqwYgJUny_YM-MFBPUlKgiCtsQhFWW_wKnlgqh-k8MrevA--mLINeZL-7HXKsmrrv-oR37bl2wHrmQ1XMyeVVUxKxWAYKD16IeIJd0hFfkNPo8_GCsEJpVlFapua_oTPVlbfwnhRcbcHmjspPt0204lkrljbelUE7PqL9rxFXAofUeySmi4tYdUEOm7N7N4JQUh9Tdy-G_iT3CJ9IQuW9rjAXrgAwljY0Lyo4g"
     },
-    "pathParameters": null,
+    "pathParameters": { "networkId": "edf1c6e0-0ea8-11e8-bd71-93793170cb01" },
     "stageVariables": null,
     "requestContext": {
       "resourceId": "1fiuvd",
