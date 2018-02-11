@@ -9,9 +9,15 @@ const log = require('lambda-log');
 // refer to:        http://amzn.to/2fo77UI
 
 // Generate policy to allow this user on this API:
+
 const generatePolicy = (principalId, effect, resource) => {
   const authResponse = {};
   authResponse.principalId = principalId;
+
+  // Allow execution for GET, POST, DELETE and PUT for an API Gateway resource.
+  // WORKAROUND: https://forums.aws.amazon.com/thread.jspa?threadID=225934&tstart=0
+  const anyApiMethodResource = resource.replace(/GET|POST|DELETE|PUT/, "*");
+  const anyApiPathResource = `${anyApiMethodResource.substring(0, anyApiMethodResource.indexOf('*'))}*/*`;
   if (effect && resource) {
     const policyDocument = {};
     policyDocument.Version = '2012-10-17';
@@ -19,7 +25,7 @@ const generatePolicy = (principalId, effect, resource) => {
     const statementOne = {};
     statementOne.Action = 'execute-api:Invoke';
     statementOne.Effect = effect;
-    statementOne.Resource = resource;
+    statementOne.Resource = anyApiPathResource;
     policyDocument.Statement[0] = statementOne;
     authResponse.policyDocument = policyDocument;
     authResponse.context = {};
@@ -37,11 +43,19 @@ module.exports.handler = (event, context, cb) => {
   }
 
   log.debug(JSON.stringify(event));
+  // 1. Read from query string 'auth' parameter
+  var token = event.queryStringParameters && event.queryStringParameters.auth;
 
-  var token = event.queryStringParameters.auth;
-  if (!token && event.headers.Authorization) {
+  // 2. Read from request headers
+  if (!token && event.headers && event.headers.Authorization) {
     // Remove 'bearer ' from token:
     token = event.headers.Authorization.substring(7);
+  }
+
+  // 3. Read from header passed through API gateway
+  if (!token && event.authorizationToken) {
+    // Remove 'bearer ' from token:
+    token = event.authorizationToken.substring(7);
   }
 
   if (token) {
@@ -70,10 +84,10 @@ module.exports.handler = (event, context, cb) => {
             cb('Unauthorized');
           } else {
             var policy = generatePolicy(decoded.sub, 'Allow', event.methodArn);
-            // Add sub to 'context' so we can identify account in following request
+            // Context: any additonal metadata
             // https://docs.aws.amazon.com/apigateway/latest/developerguide/use-custom-authorizer.html#api-gateway-custom-authorizer-output
             // https://auth0.com/docs/tokens/id-token
-            policy.context.sub = decoded.sub;
+            policy.context.appName = 'cupel';
             cb(null, policy);
           }
         });

@@ -91,7 +91,11 @@ const DeleteNetwork = (userId, networkId, cb) => {
 exports.handler = (event, context, callback) => {
   log.debug(JSON.stringify(event));
 
-  var principalId = event.requestContext.authorizer.principalId;
+  var principalId = event.requestContext && event.requestContext.authorizer && event.requestContext.authorizer.principalId;
+  if (!principalId) {
+      callback(null, { statusCode: 400, body: 'user not set'});
+  }
+
   if (event.resource === '/networks' && event.httpMethod === 'GET') {
     ListNetworks(principalId, (err, data) => {
         if (err) {

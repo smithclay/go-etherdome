@@ -137,18 +137,30 @@ Resources:
         Variables:
           TABLE_NAME: !Ref NetworksTable
       Events:
-        Networks:
+        ListNetworks:
           Type: Api
           Properties:
             RestApiId: !Ref RestApiGateway
             Path: /networks
-            Method: ANY
-        Network:
+            Method: GET
+        CreateNetwork:
+          Type: Api
+          Properties:
+            RestApiId: !Ref RestApiGateway
+            Path: /networks
+            Method: POST
+        GetNetwork:
           Type: Api
           Properties:
             RestApiId: !Ref RestApiGateway
             Path: /networks/{networkId}
-            Method: ANY
+            Method: GET
+        DeleteNetwork:
+          Type: Api
+          Properties:
+            RestApiId: !Ref RestApiGateway
+            Path: /networks/{networkId}
+            Method: DELETE
 
   #
   # Management REST API Gateway
@@ -206,18 +218,42 @@ Resources:
           - https
         paths:
           "/networks":
-            x-amazon-apigateway-any-method:
+            get:
+              produces:
+                - application/json
               x-amazon-apigateway-integration:
                 httpMethod: POST
                 type: aws_proxy
+                passthroughBehavior: when_no_match
+                uri: !Sub arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${RestApiFn.Arn}/invocations
+                responses: {}
+              security:
+                - authorizer: []
+            post:
+              x-amazon-apigateway-integration:
+                httpMethod: POST
+                type: aws_proxy
+                passthroughBehavior: when_no_match
                 uri: !Sub arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${RestApiFn.Arn}/invocations
                 responses: {}
               security:
                 - authorizer: []
           "/networks/{networkId}":
-            x-amazon-apigateway-any-method:
+            get:
+              produces:
+                - application/json
               x-amazon-apigateway-integration:
                 httpMethod: POST
+                passthroughBehavior: when_no_match
+                type: aws_proxy
+                uri: !Sub arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${RestApiFn.Arn}/invocations
+                responses: {}
+              security:
+                - authorizer: []
+            delete:
+              x-amazon-apigateway-integration:
+                httpMethod: POST
+                passthroughBehavior: when_no_match
                 type: aws_proxy
                 uri: !Sub arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${RestApiFn.Arn}/invocations
                 responses: {}
@@ -231,15 +267,17 @@ Resources:
             x-amazon-apigateway-authtype: custom
             x-amazon-apigateway-authorizer:
               authorizerUri: !Sub arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${ApiAuthorizerFn.Arn}/invocations
-              identitySource: method.request.querystring.auth
               authorizerResultTtlInSeconds: 300
               authorizerCredentials: !Sub ${AuthorizerInvokeRole.Arn}
-              type: request
+              type: token
 
   #
   # JSON-RPC API Gateway
   # based on: https://github.com/daveygit2050/serverless-passgen/blob/2831e9068d2f0705c84af19c92a3f448a0c28f3e/serverless.yml
   #
+
+  # WORKAROUND: Configure API Gateway to send logs to CloudWatch using this role.
+  # TODO: Will this eventually get added to SAM?
   AmazonAPIGatewayPushToCloudWatchLogs:
     Type: AWS::IAM::Role
     Properties:
