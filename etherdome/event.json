@@ -23,7 +23,9 @@
   "queryStringParameters": {
     "auth": "eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiIsImtpZCI6Ik5UTkRSa1ZDTkVVeVJqQXpNVVl4T0RORlFqQTFNVVkzTVRZMk1ESXpRalpCTmpVek5UaEVPQSJ9.eyJpc3MiOiJodHRwczovL3NtaXRoY2xheS5hdXRoMC5jb20vIiwic3ViIjoiQ1VHbW5OTlYwTGk5SEg3SXVGWjNySkdJQnhUR2VqTGlAY2xpZW50cyIsImF1ZCI6Imh0dHBzOi8vM25zZms2ZTN6aS5leGVjdXRlLWFwaS51cy13ZXN0LTIuYW1hem9uYXdzLmNvbS9Qcm9kLyIsImlhdCI6MTUxNzI3ODc0OCwiZXhwIjoxNTE3MzY1MTQ4LCJhenAiOiJDVUdtbk5OVjBMaTlISDdJdUZaM3JKR0lCeFRHZWpMaSIsImd0eSI6ImNsaWVudC1jcmVkZW50aWFscyJ9.HjGE5ofKeh4ZetkjtSmDupIp0S9JvYYDQn6RKxPsKdP3-lVqrDd0-A7dXdJ_n8cfphODDuG-VVJgCJ87zH0rMmdp7SGHx4EVGqE9tnSnqZ1cdBu2pBaiDlEocWfy1JoozRu_feL25tZ6ykMXNW82SgtMTJ2utnqlrW2t-ownbRdE4uNZjq3J7b2Sr2Q7ZxXC0Ju-Smu6m_0dd02xp_LR0RXL--Oa0qT-NjP0ud9Vp-8wsRiEoCS5-Rnh2nIz9PUXbLQiJaVFzr-dGdkqfF5IjiScNxIfwZjS-O-GaFU8zQq3RBCwmE-aCF2CLOLzD7zLEJEILVPPddIdLVwtPnlCQQ"
   },
-  "pathParameters": null,
+  "pathParameters": {
+    "networkId": "test-network-id"
+  },
   "stageVariables": null,
   "requestContext": {
     "resourceId": "2snm52cdta",

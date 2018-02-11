@@ -21,8 +21,19 @@ exports.handler = (event, context, callback) => {
         return callback(null, { statusCode: 500, body: 'No authorization key found.' });
     }
     var userId = event.requestContext.authorizer.principalId;
-    var datadir = `/tmp/datadir-${userId}`;
-    var chainData = new ChainData(userId, datadir);
+    var networkId = event.pathParameters && event.pathParameters.networkId;
+    if (!networkId) {
+        return callback(null, { statusCode: 400, body: 'missing network id' });
+    }
+
+    try {
+        var jsonRPCReq = JSON.parse(event.body);
+    } catch (e) {
+        return callback(null, { statusCode: 400, body: 'could not parse JSON-RPC request' });
+    }
+
+    var datadir = `/tmp/datadir-${networkId}`;
+    var chainData = new ChainData(networkId, datadir);
 
     chainData.import((err) => {
         if (err) {
@@ -45,6 +56,12 @@ exports.handler = (event, context, callback) => {
 
             geth.on('exit', () => {
                 // If read: return immediately and skip this stepp (but still need to exit)
+                // TODO: Move into a separate request class?
+                if (jsonRPCReq.method !== "eth_sendTransaction" && jsonRPCReq.method !==
+                    "eth_sendRawTransaction") {
+                    return callback(null, gatewayResponse);
+                }
+
                 chainData.export((err) => {
                     if (err) {
                         log.error(err);

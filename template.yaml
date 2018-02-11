@@ -155,6 +155,7 @@ Resources:
   #
 
   # Explicit API Gateway permission: workaround for ANY method
+  # CORS example: https://github.com/awslabs/serverless-application-model/blob/master/examples/2016-10-31/api_swagger_cors/swagger.yaml
   # https://github.com/awslabs/serverless-application-model/issues/59
   RestApiGatewayLambdaPermission:
     Type: AWS::Lambda::Permission
@@ -291,7 +292,7 @@ Resources:
         info:
           title: "JSON-RPC API Interface"
         paths:
-          "/":
+          "/{networkId}":
             post:
               x-amazon-apigateway-integration:
                 httpMethod: POST
@@ -300,6 +301,35 @@ Resources:
                 responses: {}
               security:
                 - authorizer: []
+            options:
+              consumes:
+              - application/json
+              produces:
+              - application/json
+              responses:
+                '200':
+                  description: 200 response
+                  schema:
+                    $ref: "#/definitions/Empty"
+                  headers:
+                    Access-Control-Allow-Origin:
+                      type: string
+                    Access-Control-Allow-Methods:
+                      type: string
+                    Access-Control-Allow-Headers:
+                      type: string
+              x-amazon-apigateway-integration:
+                responses:
+                  default:
+                    statusCode: 200
+                    responseParameters:
+                      method.response.header.Access-Control-Allow-Methods: "'DELETE,GET,HEAD,OPTIONS,PATCH,POST,PUT'"
+                      method.response.header.Access-Control-Allow-Headers: "'Content-Type,Authorization,X-Amz-Date,X-Api-Key,X-Amz-Security-Token'"
+                      method.response.header.Access-Control-Allow-Origin: "'*'"
+                passthroughBehavior: when_no_match
+                requestTemplates:
+                  application/json: "{\"statusCode\": 200}"
+                type: mock
         securityDefinitions:
           authorizer:
             type: apiKey
@@ -312,6 +342,10 @@ Resources:
               authorizerResultTtlInSeconds: 300
               authorizerCredentials: !Sub ${AuthorizerInvokeRole.Arn}
               type: request
+        definitions:
+          Empty:
+            type: object
+            title: Empty Schema
 Outputs:
   ApiUrl:
     Description: URL of your API endpoint
