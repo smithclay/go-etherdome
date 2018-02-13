@@ -1,7 +1,7 @@
 {
-    "resource": "/networks/{networkId}",
+    "resource": "/networks",
     "path": "/networks",
-    "httpMethod": "DELETE",
+    "httpMethod": "GET",
     "headers": {
       "Accept": "*/*",
       "CloudFront-Forwarded-Proto": "https",
